@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DrDecki</title>
+  <link rel="icon" href="logo.jpg">
+  <style>
+    body {
+      margin: 0;
+      font: 14px/1.45 "Lucida Grande", Verdana, Geneva, Arial, sans-serif;
+      color: #000;
+      background: #fff;
+    }
+
+    a {
+      color: #3d578c;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    /* title */
+    #titlearea {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #5373b4;
+    }
+
+    #titlearea img {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+    }
+
+    #projectname {
+      font: 200% Tahoma, Arial, sans-serif;
+    }
+
+    /* tab bar */
+    .tabs {
+      padding: 0 16px;
+      background: linear-gradient(#f1f4f9, #dbe3ef 55%, #c9d4e8);
+      border-bottom: 1px solid #a3b4d7;
+      font: bold 12px "Lucida Grande", Geneva, Helvetica, Arial, sans-serif;
+    }
+
+    .tabs ul {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tabs li {
+      border-right: 1px solid #b3c2df;
+    }
+
+    .tabs a {
+      display: block;
+      padding: 0 14px;
+      line-height: 36px;
+      color: #283a5d;
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+    }
+
+    .tabs a:hover,
+    .tabs a.current {
+      background: linear-gradient(#5b77ad, #3a5a96);
+      color: #fff;
+      text-shadow: none;
+      text-decoration: none;
+    }
+
+    .header {
+      padding: 8px 16px;
+      background: linear-gradient(#f9fafc, #e8edf5);
+      border-bottom: 1px solid #c4cfe5;
+      font: bold 150% Tahoma, Arial, sans-serif;
+      color: #1c2b4b;
+    }
+
+    /* content */
+    .contents {
+      max-width: 900px;
+      padding: 12px 16px 32px;
+    }
+
+    .contents p {
+      max-width: 70ch;
+    }
+
+    h2 {
+      margin: 28px 0 6px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #879ecb;
+      color: #354c7b;
+      font-size: 150%;
+      font-weight: normal;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 1px solid #c4cfe5;
+      font-size: 13px;
+    }
+
+    th {
+      padding: 5px 10px;
+      text-align: left;
+      background: #e8edf5;
+      color: #354c7b;
+      border-bottom: 1px solid #c4cfe5;
+    }
+
+    td {
+      padding: 5px 10px;
+      vertical-align: top;
+      border-bottom: 1px solid #e6eaf2;
+    }
+
+    tr:nth-child(odd) td {
+      background: #f8f9fc;
+    }
+
+    .name,
+    .note,
+    .download {
+      white-space: nowrap;
+    }
+
+    .note,
+    .by {
+      color: #5a6b8c;
+    }
+
+    .by {
+      font-size: 12px;
+    }
+
+    #search {
+      margin: 12px 0;
+      padding: 4px 10px;
+      width: 260px;
+      max-width: 100%;
+      border: 1px solid #90a5ce;
+      border-radius: 12px;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    #count {
+      margin-left: 8px;
+      color: #5a6b8c;
+      font-size: 13px;
+    }
+
+    .footer {
+      padding: 6px 16px;
+      border-top: 1px solid #c4cfe5;
+      text-align: right;
+      font-size: 11px;
+      color: #2a3d61;
+    }
+  </style>
+</head>
+<body>
+
+<div id="titlearea">
+  <img src="logo.jpg" alt="">
+  <div id="projectname">DrDecki</div>
+</div>
+
+<div class="tabs">
+  <ul>
+    <li><a href="#main" class="current">Main Page</a></li>
+    <li><a href="#vhdb">VitaHomebrewDB</a></li>
+    <li><a href="https://github.com/DrDecki?tab=repositories">Repositories</a></li>
+    <li><a href="https://github.com/DrDecki">GitHub</a></li>
+    <li><a href="https://www.youtube.com/@DrDecki">YouTube</a></li>
+    <li><a href="https://x.com/DrDecki">Twitter</a></li>
+    <li><a href="https://ko-fi.com/drdecki">Ko-fi</a></li>
+  </ul>
+</div>
+
+<div class="header" id="header">Hi, I'm DrDecki</div>
+
+<div class="contents" id="main">
+  <h2>About</h2>
+  <p>Hobby developer, mostly making homebrew and ports for the PS Vita and building my own small games.</p>
+
+  <h2>Ports</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><td class="name"><a href="https://github.com/DrDecki/vkquake2-vita">vkQuake2</a></td><td>Quake II on the Vita, 60 FPS</td><td class="note">v1.1</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/supertux-vita">SuperTux</a></td><td>SuperTux 0.7 on the Vita</td><td class="note">v1.0</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/Aleph-One-PsVita">Aleph One</a></td><td>Marathon on the Vita</td><td class="note">v2.0</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/taisei-vita">Taisei</a></td><td>Touhou fangame</td><td class="note">working on it</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/corsixth-vita">CorsixTH</a></td><td>Theme Hospital</td><td class="note">working on it</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/mgs3-crouch-walk-mod-vita">MGS3 Crouch Walk</a></td><td>Crouch walk mod for the HD Collection</td><td class="note"></td></tr>
+    </table>
+  </div>
+
+  <h2>Other Stuff</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><td class="name"><a href="https://github.com/DrDecki/vkvita">VkVita</a></td><td>Vulkan-style graphics library for Vita homebrew</td><td class="note"></td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/psychonauts-decomp">psychonauts-decomp</a></td><td>Decompilation of Psychonauts</td><td class="note">working on it</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a></td><td>Homebrew catalog for Vita and PSP</td><td class="note"></td></tr>
+    </table>
+  </div>
+
+  <h2>Contact</h2>
+  <ul>
+    <li><b>Discord:</b> deckimax</li>
+  </ul>
+</div>
+
+<div class="contents" id="vhdb" hidden>
+  <p>All ports from my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>. Click a name for the source code, or grab the VPK directly. Some ports also need a data file.</p>
+
+  <input id="search" type="search" placeholder="Search name or author">
+  <span id="count">Loading...</span>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Description</th><th>Size</th><th>Download</th></tr>
+      </thead>
+      <tbody id="ports"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">Last updated November 2026</div>
+
+<script>
+  // tabs
+  function showPage(name) {
+    if (name !== 'vhdb') name = 'main';
+
+    document.getElementById('main').hidden = name !== 'main';
+    document.getElementById('vhdb').hidden = name !== 'vhdb';
+    document.getElementById('header').textContent = name === 'vhdb' ? 'VitaHomebrewDB' : "Hi, I'm DrDecki";
+
+    for (const tab of document.querySelectorAll('.tabs a')) {
+      tab.classList.toggle('current', tab.getAttribute('href') === '#' + name);
+    }
+  }
+
+  window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+  showPage(location.hash.slice(1));
+
+  // port list
+  let ports = [];
+
+  function megabytes(bytes) {
+    const n = parseInt(bytes);
+    return n ? (n / 1024 / 1024).toFixed(1) + ' MB' : '';
+  }
+
+  function escape(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
+
+  function showPorts() {
+    const search = document.getElementById('search').value.toLowerCase();
+    let html = '';
+    let shown = 0;
+
+    for (const port of ports) {
+      if (search && !(port.name + ' ' + port.author).toLowerCase().includes(search)) continue;
+      shown++;
+
+      let name = escape(port.name);
+      if (port.source) name = `<a href="${escape(port.source)}">${name}</a>`;
+
+      let download = `<a href="${escape(port.url)}">VPK</a>`;
+      if (port.data) download += ` &middot; <a href="${escape(port.data)}">Data</a>`;
+
+      html += `<tr>
+        <td class="name">${name}</td>
+        <td>${escape(port.description)}<div class="by">${escape((port.version || '').replace('v.', 'v'))} by ${escape(port.author)}</div></td>
+        <td class="note">${megabytes(port.size)}</td>
+        <td class="download">${download}</td>
+      </tr>`;
+    }
+
+    document.getElementById('ports').innerHTML = html;
+    document.getElementById('count').textContent = `${shown} of ${ports.length} ports`;
+  }
+
+  async function loadPorts() {
+    try {
+      const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/apps.json');
+      const apps = await response.json();
+
+      // type 2 = ports
+      ports = apps.filter(app => app.type === '2');
+      ports.sort((a, b) => a.name.localeCompare(b.name));
+      showPorts();
+    } catch (error) {
+      document.getElementById('count').textContent = 'Could not load the port list, try reloading the page.';
+    }
+  }
+
+  document.getElementById('search').addEventListener('input', showPorts);
+  loadPorts();
+</script>
+
+</body>
+</html>

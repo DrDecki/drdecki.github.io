@@ -189,7 +189,7 @@
   <ul>
     <li><a href="#main" class="current">Main Page</a></li>
     <li><a href="#vhdb">VitaHomebrewDB</a></li>
-    <li><a href="https://github.com/DrDecki?tab=repositories">Repositories</a></li>
+    <li><a href="#repos">Repositories</a></li>
     <li><a href="https://github.com/DrDecki">GitHub</a></li>
     <li><a href="https://www.youtube.com/@DrDecki">YouTube</a></li>
     <li><a href="https://x.com/DrDecki">Twitter</a></li>
@@ -240,16 +240,24 @@
   <p id="total" class="note"></p>
 </div>
 
+<div class="contents" id="repos" hidden>
+  <p>All my public repositories on <a href="https://github.com/DrDecki">GitHub</a>, newest first.</p>
+  <span id="repo-count">Loading...</span>
+  <div id="repo-list"></div>
+</div>
+
 <div class="footer">Last updated November 2026</div>
 
 <script>
   // tabs
   function showPage(name) {
-    if (name !== 'vhdb') name = 'main';
+    const titles = { main: "Hi, I'm DrDecki", vhdb: 'VitaHomebrewDB', repos: 'Repositories' };
+    if (!titles[name]) name = 'main';
 
-    document.getElementById('main').hidden = name !== 'main';
-    document.getElementById('vhdb').hidden = name !== 'vhdb';
-    document.getElementById('header').textContent = name === 'vhdb' ? 'VitaHomebrewDB' : "Hi, I'm DrDecki";
+    for (const page in titles) {
+      document.getElementById(page).hidden = page !== name;
+    }
+    document.getElementById('header').textContent = titles[name];
 
     for (const tab of document.querySelectorAll('.tabs a')) {
       tab.classList.toggle('current', tab.getAttribute('href') === '#' + name);
@@ -258,6 +266,45 @@
 
   window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
   showPage(location.hash.slice(1));
+
+  // repositories
+  function repoTable(title, repos) {
+    if (!repos.length) return '';
+
+    let rows = '';
+    for (const repo of repos) {
+      rows += `<tr>
+        <td class="name"><a href="${escape(repo.html_url)}">${escape(repo.name)}</a></td>
+        <td>${escape(repo.description)}</td>
+        <td class="note">${escape(repo.language)}</td>
+        <td class="note">${repo.stargazers_count ? '&#9733; ' + repo.stargazers_count : ''}</td>
+      </tr>`;
+    }
+
+    return `<h2>${title} (${repos.length})</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Description</th><th>Language</th><th>Stars</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  async function loadRepos() {
+    try {
+      const response = await fetch('https://api.github.com/users/DrDecki/repos?per_page=100&sort=pushed');
+      const repos = await response.json();
+
+      document.getElementById('repo-list').innerHTML =
+        repoTable('My projects', repos.filter(repo => !repo.fork)) +
+        repoTable('Forks', repos.filter(repo => repo.fork));
+      document.getElementById('repo-count').textContent = '';
+    } catch (error) {
+      document.getElementById('repo-count').textContent = 'Could not load the repositories, try reloading the page.';
+    }
+  }
+
+  loadRepos();
 
   // catalog
   const repo = 'https://github.com/DrDecki/VitaHomebrewDB/blob/main/';

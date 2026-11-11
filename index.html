@@ -143,6 +143,20 @@
       background: #f8f9fc;
     }
 
+    /* same column widths in both project tables so they line up */
+    table.projects {
+      table-layout: fixed;
+      min-width: 560px;
+    }
+
+    table.projects .name {
+      width: 200px;
+    }
+
+    table.projects .note {
+      width: 120px;
+    }
+
     .name,
     .note,
     .download {
@@ -211,7 +225,7 @@
 
   <h2>Ports</h2>
   <div class="table-wrap">
-    <table>
+    <table class="projects">
       <tr><td class="name"><a href="https://github.com/DrDecki/vkquake2-vita">vkQuake2</a></td><td>Quake II on the Vita, 60 FPS</td><td class="note">v1.1</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/supertux-vita">SuperTux</a></td><td>SuperTux 0.7 on the Vita</td><td class="note">v1.0</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/Aleph-One-PsVita">Aleph One</a></td><td>Marathon on the Vita</td><td class="note">v2.1.1</td></tr>
@@ -222,7 +236,7 @@
 
   <h2>Other Stuff</h2>
   <div class="table-wrap">
-    <table>
+    <table class="projects">
       <tr><td class="name"><a href="https://github.com/DrDecki/vkvita">VkVita</a></td><td>Vulkan-style graphics library for Vita homebrew</td><td class="note"></td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/psychonauts-decomp">psychonauts-decomp</a></td><td>Decompilation of Psychonauts</td><td class="note">working on it</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a></td><td>Homebrew catalog for Vita and PSP</td><td class="note"></td></tr>

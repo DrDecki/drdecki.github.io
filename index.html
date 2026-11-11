@@ -290,7 +290,10 @@
   async function loadRepos() {
     try {
       const response = await fetch('https://api.github.com/users/DrDecki/repos?per_page=100&sort=pushed');
-      const repos = await response.json();
+      let repos = await response.json();
+
+      // OptiCraft was taken down by DMCA, so don't link to it
+      repos = repos.filter(repo => !repo.disabled && !repo.name.toLowerCase().includes('opticraft'));
 
       document.getElementById('repo-list').innerHTML = repoTable(repos);
       document.getElementById('repo-count').textContent = `${repos.length} repositories`;

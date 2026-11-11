@@ -240,7 +240,7 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Name</th><th>Description</th><th>Size</th><th>Download</th></tr>
+        <tr><th>Name</th><th>Description</th><th>Size</th><th>Download</th><th>Source</th></tr>
       </thead>
       <tbody id="ports"></tbody>
     </table>
@@ -291,13 +291,13 @@
 
       let download = `<a href="${escape(port.url)}">VPK</a>`;
       if (port.data) download += ` &middot; <a href="${escape(port.data)}">Data</a>`;
-      if (port.source) download += ` &middot; <a href="${escape(port.source)}">Source</a>`;
 
       html += `<tr>
         <td class="name">${escape(port.name)}</td>
         <td>${escape(port.description)}<div class="by">${escape((port.version || '').replace('v.', 'v'))} by ${escape(port.author)}</div></td>
         <td class="note">${megabytes(port.size)}</td>
         <td class="download">${download}</td>
+        <td>${port.source ? `<a href="${escape(port.source)}">repo</a>` : '&mdash;'}</td>
       </tr>`;
     }
 

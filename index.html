@@ -82,6 +82,12 @@
       text-decoration: none;
     }
 
+    /* arrow on tabs that go to another site */
+    .tabs a[href^="http"]::after {
+      content: " \2197";
+      font-weight: normal;
+    }
+
     .header {
       padding: 8px 16px;
       background: linear-gradient(#f9fafc, #e8edf5);
@@ -208,10 +214,9 @@
     <table>
       <tr><td class="name"><a href="https://github.com/DrDecki/vkquake2-vita">vkQuake2</a></td><td>Quake II on the Vita, 60 FPS</td><td class="note">v1.1</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/supertux-vita">SuperTux</a></td><td>SuperTux 0.7 on the Vita</td><td class="note">v1.0</td></tr>
-      <tr><td class="name"><a href="https://github.com/DrDecki/Aleph-One-PsVita">Aleph One</a></td><td>Marathon on the Vita</td><td class="note">v2.0</td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/Aleph-One-PsVita">Aleph One</a></td><td>Marathon on the Vita</td><td class="note">v2.1.1</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/taisei-vita">Taisei</a></td><td>Touhou fangame</td><td class="note">working on it</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/corsixth-vita">CorsixTH</a></td><td>Theme Hospital</td><td class="note">working on it</td></tr>
-      <tr><td class="name"><a href="https://github.com/DrDecki/mgs3-crouch-walk-mod-vita">MGS3 Crouch Walk</a></td><td>Crouch walk mod for the HD Collection</td><td class="note"></td></tr>
     </table>
   </div>
 
@@ -221,13 +226,10 @@
       <tr><td class="name"><a href="https://github.com/DrDecki/vkvita">VkVita</a></td><td>Vulkan-style graphics library for Vita homebrew</td><td class="note"></td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/psychonauts-decomp">psychonauts-decomp</a></td><td>Decompilation of Psychonauts</td><td class="note">working on it</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a></td><td>Homebrew catalog for Vita and PSP</td><td class="note"></td></tr>
+      <tr><td class="name"><a href="https://github.com/DrDecki/mgs3-crouch-walk-mod-vita">MGS3 Crouch Walk</a></td><td>Crouch walk mod for the HD Collection</td><td class="note"></td></tr>
     </table>
   </div>
 
-  <h2>Contact</h2>
-  <ul>
-    <li><b>Discord:</b> deckimax</li>
-  </ul>
 </div>
 
 <div class="contents" id="vhdb" hidden>
@@ -287,6 +289,26 @@
       </div>`;
   }
 
+  // the main language of a repo, remembered until the next push so we don't hit GitHub's rate limit
+  async function getLanguage(repo) {
+    const key = 'language-' + repo.name + '-' + repo.pushed_at;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) return saved;
+    } catch (error) {}
+
+    try {
+      const response = await fetch(repo.languages_url);
+      if (!response.ok) return '';
+      const languages = await response.json();
+      const top = Object.keys(languages).sort((a, b) => languages[b] - languages[a])[0] || '';
+      try { localStorage.setItem(key, top); } catch (error) {}
+      return top;
+    } catch (error) {
+      return '';
+    }
+  }
+
   async function loadRepos() {
     try {
       const response = await fetch('https://api.github.com/users/DrDecki/repos?per_page=100&sort=pushed');
@@ -297,6 +319,15 @@
 
       document.getElementById('repo-list').innerHTML = repoTable(repos);
       document.getElementById('repo-count').textContent = `${repos.length} repositories`;
+
+      // GitHub leaves the language empty on some repos (mostly forks), so ask for it separately
+      const missing = repos.filter(repo => !repo.language);
+      for (const repo of missing) {
+        repo.language = await getLanguage(repo);
+      }
+      if (missing.length) {
+        document.getElementById('repo-list').innerHTML = repoTable(repos);
+      }
     } catch (error) {
       document.getElementById('repo-count').textContent = 'Could not load the repositories, try reloading the page.';
     }

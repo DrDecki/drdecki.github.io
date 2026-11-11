@@ -232,7 +232,7 @@
 </div>
 
 <div class="contents" id="vhdb" hidden>
-  <p>All ports from my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>. Click a name for the source code, or grab the VPK directly. Some ports also need a data file.</p>
+  <p>All ports from my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>. Grab the VPK directly or check out the source code. Some ports also need a data file.</p>
 
   <input id="search" type="search" placeholder="Search name or author">
   <span id="count">Loading...</span>
@@ -289,14 +289,12 @@
       if (search && !(port.name + ' ' + port.author).toLowerCase().includes(search)) continue;
       shown++;
 
-      let name = escape(port.name);
-      if (port.source) name = `<a href="${escape(port.source)}">${name}</a>`;
-
       let download = `<a href="${escape(port.url)}">VPK</a>`;
       if (port.data) download += ` &middot; <a href="${escape(port.data)}">Data</a>`;
+      if (port.source) download += ` &middot; <a href="${escape(port.source)}">Source</a>`;
 
       html += `<tr>
-        <td class="name">${name}</td>
+        <td class="name">${escape(port.name)}</td>
         <td>${escape(port.description)}<div class="by">${escape((port.version || '').replace('v.', 'v'))} by ${escape(port.author)}</div></td>
         <td class="note">${megabytes(port.size)}</td>
         <td class="download">${download}</td>

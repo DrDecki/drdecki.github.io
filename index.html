@@ -183,6 +183,21 @@
       font-size: 13px;
     }
 
+    #sort {
+      margin: 0 0 0 4px;
+      padding: 3px 6px;
+      border: 1px solid #90a5ce;
+      border-radius: 3px;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    label[for="sort"] {
+      margin-left: 8px;
+      font-size: 13px;
+      color: #354c7b;
+    }
+
     #count {
       margin-left: 8px;
       color: #5a6b8c;
@@ -250,6 +265,13 @@
   <p>Everything in my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>, loaded straight from its <a href="https://github.com/DrDecki/VitaHomebrewDB/blob/main/CATALOG.md">CATALOG.md</a>.</p>
 
   <input id="search" type="search" placeholder="Search name or author">
+  <label for="sort">Sort by</label>
+  <select id="sort">
+    <option value="name">Name</option>
+    <option value="date">Recently updated</option>
+    <option value="size">Size</option>
+    <option value="author">Author</option>
+  </select>
   <span id="count">Loading...</span>
 
   <div id="catalog"></div>
@@ -384,11 +406,54 @@
         const cells = line.slice(1, -1).split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'));
         if (cells[0].startsWith('---')) continue;
         if (!section.header) section.header = cells;
-        else section.rows.push(cells);
+        else section.rows.push({ cells });
       } else if (line.trim() && !line.startsWith('#') && !line.startsWith('|')) {
         if (sections.length) total = line;
       }
     }
+  }
+
+  // CATALOG.md has no dates, so take them from the json files
+  async function readDetails() {
+    const files = ['apps.json', 'psp_apps.json', 'preserved/plugins.json', 'preserved/tools.json'];
+    const details = {};
+
+    await Promise.all(files.map(async file => {
+      try {
+        const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file);
+        for (const app of await response.json()) {
+          details[app.url] = app.date || '';
+        }
+      } catch (error) {}
+    }));
+
+    for (const section of sections) {
+      for (const row of section.rows) {
+        const download = row.cells.join(' ').match(/\[download\]\(([^)]*)\)/);
+        row.date = (download && details[download[1]]) || '';
+        row.size = megabytes(row.cells[3]);
+      }
+    }
+  }
+
+  // "42.5 MB" -> 42.5
+  function megabytes(text) {
+    const match = (text || '').match(/([\d.]+)\s*(KB|MB|GB)/i);
+    if (!match) return 0;
+    const unit = match[2].toUpperCase();
+    return parseFloat(match[1]) * (unit === 'GB' ? 1024 : unit === 'KB' ? 1 / 1024 : 1);
+  }
+
+  function sortRows(rows) {
+    const by = document.getElementById('sort').value;
+    const name = (a, b) => a.cells[0].localeCompare(b.cells[0]);
+
+    return [...rows].sort((a, b) => {
+      if (by === 'date') return b.date.localeCompare(a.date) || name(a, b);
+      if (by === 'size') return b.size - a.size || name(a, b);
+      if (by === 'author') return a.cells[1].localeCompare(b.cells[1]) || name(a, b);
+      return name(a, b);
+    });
   }
 
   function showCatalog() {
@@ -399,18 +464,22 @@
 
     for (const section of sections) {
       let rows = '';
-      for (const cells of section.rows) {
+      for (const row of sortRows(section.rows)) {
         all++;
-        if (search && !(cells[0] + ' ' + cells[1]).toLowerCase().includes(search)) continue;
+        if (search && !(row.cells[0] + ' ' + row.cells[1]).toLowerCase().includes(search)) continue;
         shown++;
-        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
+
+        // the update date goes in its own column right after the version
+        const cells = [...row.cells.slice(0, 3), row.date, ...row.cells.slice(3)];
+        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
       }
       if (!rows) continue;
 
+      const header = [...section.header.slice(0, 3), 'Updated', ...section.header.slice(3)];
       html += `<h2>${escape(section.title)}</h2>
         <div class="table-wrap">
           <table>
-            <thead><tr>${section.header.map(cell => `<th>${escape(cell)}</th>`).join('')}</tr></thead>
+            <thead><tr>${header.map(cell => `<th>${escape(cell)}</th>`).join('')}</tr></thead>
             <tbody>${rows}</tbody>
           </table>
         </div>`;
@@ -424,6 +493,7 @@
     try {
       const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/CATALOG.md');
       readCatalog(await response.text());
+      await readDetails();
       document.getElementById('total').textContent = total;
       showCatalog();
     } catch (error) {
@@ -431,6 +501,7 @@
     }
   }
 
+  document.getElementById('sort').addEventListener('change', showCatalog);
   document.getElementById('search').addEventListener('input', showCatalog);
   loadCatalog();
 </script>

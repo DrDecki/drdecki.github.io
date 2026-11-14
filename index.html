@@ -5,16 +5,119 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DrDecki</title>
   <link rel="icon" href="logo.jpg">
+  <script>
+    // pick the saved theme before anything is drawn, so the page doesn't flash white
+    try {
+      const theme = localStorage.getItem('theme');
+      if (theme) document.documentElement.dataset.theme = theme;
+    } catch (error) {}
+  </script>
   <style>
+    :root {
+      --page: #fff;
+      --text: #000;
+      --link: #3d578c;
+      --muted: #5a6b8c;
+      --heading: #354c7b;
+      --title-line: #5373b4;
+      --tab-top: #f1f4f9;
+      --tab-mid: #dbe3ef;
+      --tab-bottom: #c9d4e8;
+      --tab-line: #a3b4d7;
+      --tab-split: #b3c2df;
+      --tab-text: #283a5d;
+      --tab-shadow: rgba(255, 255, 255, 0.9);
+      --active-top: #5b77ad;
+      --active-bottom: #3a5a96;
+      --header-top: #f9fafc;
+      --header-bottom: #e8edf5;
+      --header-text: #1c2b4b;
+      --line: #c4cfe5;
+      --row-line: #e6eaf2;
+      --row-alt: #f8f9fc;
+      --th: #e8edf5;
+      --h2-line: #879ecb;
+      --box: #f9fafc;
+      --input-line: #90a5ce;
+      --input: #fff;
+      --footer-text: #2a3d61;
+      color-scheme: light;
+    }
+
+    /* dark colors in the spirit of Doxygen's own dark theme */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --page: #1c1d1f;
+        --text: #d2dbde;
+        --link: #8fa8dc;
+        --muted: #8a96ad;
+        --heading: #9fb3dc;
+        --title-line: #3c5486;
+        --tab-top: #303846;
+        --tab-mid: #252c38;
+        --tab-bottom: #1e242e;
+        --tab-line: #39445a;
+        --tab-split: #39445a;
+        --tab-text: #c3cee6;
+        --tab-shadow: rgba(0, 0, 0, 0.6);
+        --active-top: #4a6396;
+        --active-bottom: #344a78;
+        --header-top: #24282f;
+        --header-bottom: #1f2228;
+        --header-text: #d2dbde;
+        --line: #333a49;
+        --row-line: #2a2f3a;
+        --row-alt: #212328;
+        --th: #262b36;
+        --h2-line: #3f5180;
+        --box: #212328;
+        --input-line: #4a5a7d;
+        --input: #16171a;
+        --footer-text: #8a96ad;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --page: #1c1d1f;
+      --text: #d2dbde;
+      --link: #8fa8dc;
+      --muted: #8a96ad;
+      --heading: #9fb3dc;
+      --title-line: #3c5486;
+      --tab-top: #303846;
+      --tab-mid: #252c38;
+      --tab-bottom: #1e242e;
+      --tab-line: #39445a;
+      --tab-split: #39445a;
+      --tab-text: #c3cee6;
+      --tab-shadow: rgba(0, 0, 0, 0.6);
+      --active-top: #4a6396;
+      --active-bottom: #344a78;
+      --header-top: #24282f;
+      --header-bottom: #1f2228;
+      --header-text: #d2dbde;
+      --line: #333a49;
+      --row-line: #2a2f3a;
+      --row-alt: #212328;
+      --th: #262b36;
+      --h2-line: #3f5180;
+      --box: #212328;
+      --input-line: #4a5a7d;
+      --input: #16171a;
+      --footer-text: #8a96ad;
+      color-scheme: dark;
+    }
+
     body {
       margin: 0;
       font: 14px/1.45 "Lucida Grande", Verdana, Geneva, Arial, sans-serif;
-      color: #000;
-      background: #fff;
+      color: var(--text);
+      background: var(--page);
     }
 
     a {
-      color: #3d578c;
+      color: var(--link);
       font-weight: bold;
       text-decoration: none;
     }
@@ -33,7 +136,7 @@
       align-items: center;
       gap: 10px;
       padding: 8px 16px;
-      border-bottom: 1px solid #5373b4;
+      border-bottom: 1px solid var(--title-line);
     }
 
     #titlearea img {
@@ -43,14 +146,26 @@
     }
 
     #projectname {
+      flex: 1;
       font: 200% Tahoma, Arial, sans-serif;
+    }
+
+    #theme {
+      padding: 3px 10px;
+      border: 1px solid var(--input-line);
+      border-radius: 12px;
+      background: var(--input);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
     }
 
     /* tab bar */
     .tabs {
       padding: 0 16px;
-      background: linear-gradient(#f1f4f9, #dbe3ef 55%, #c9d4e8);
-      border-bottom: 1px solid #a3b4d7;
+      background: linear-gradient(var(--tab-top), var(--tab-mid) 55%, var(--tab-bottom));
+      border-bottom: 1px solid var(--tab-line);
       font: bold 12px "Lucida Grande", Geneva, Helvetica, Arial, sans-serif;
     }
 
@@ -63,20 +178,20 @@
     }
 
     .tabs li {
-      border-right: 1px solid #b3c2df;
+      border-right: 1px solid var(--tab-split);
     }
 
     .tabs a {
       display: block;
       padding: 0 14px;
       line-height: 36px;
-      color: #283a5d;
-      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.9);
+      color: var(--tab-text);
+      text-shadow: 0 1px 1px var(--tab-shadow);
     }
 
     .tabs a:hover,
     .tabs a.current {
-      background: linear-gradient(#5b77ad, #3a5a96);
+      background: linear-gradient(var(--active-top), var(--active-bottom));
       color: #fff;
       text-shadow: none;
       text-decoration: none;
@@ -100,10 +215,15 @@
 
     .header {
       padding: 8px 16px;
-      background: linear-gradient(#f9fafc, #e8edf5);
-      border-bottom: 1px solid #c4cfe5;
+      background: linear-gradient(var(--header-top), var(--header-bottom));
+      border-bottom: 1px solid var(--line);
       font: bold 150% Tahoma, Arial, sans-serif;
-      color: #1c2b4b;
+      color: var(--header-text);
+    }
+
+    .header .path {
+      font-weight: normal;
+      color: var(--muted);
     }
 
     /* content */
@@ -111,17 +231,37 @@
       padding: 12px 16px 32px;
     }
 
-    .contents p {
+    .contents p,
+    .port li {
       max-width: 70ch;
     }
 
     h2 {
       margin: 28px 0 6px;
       padding-bottom: 3px;
-      border-bottom: 1px solid #879ecb;
-      color: #354c7b;
+      border-bottom: 1px solid var(--h2-line);
+      color: var(--heading);
       font-size: 150%;
       font-weight: normal;
+    }
+
+    code {
+      padding: 0 4px;
+      background: var(--th);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      font-family: monospace, monospace;
+      font-size: 12px;
+    }
+
+    pre {
+      max-width: 70ch;
+      padding: 6px 10px;
+      overflow-x: auto;
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      font-size: 12px;
     }
 
     .table-wrap {
@@ -131,29 +271,29 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      border-top: 1px solid #c4cfe5;
+      border-top: 1px solid var(--line);
       font-size: 13px;
     }
 
     th {
       padding: 5px 10px;
       text-align: left;
-      background: #e8edf5;
-      color: #354c7b;
-      border-bottom: 1px solid #c4cfe5;
+      background: var(--th);
+      color: var(--heading);
+      border-bottom: 1px solid var(--line);
     }
 
     td {
       padding: 5px 10px;
       vertical-align: top;
-      border-bottom: 1px solid #e6eaf2;
+      border-bottom: 1px solid var(--row-line);
     }
 
     tr:nth-child(odd) td {
-      background: #f8f9fc;
+      background: var(--row-alt);
     }
 
-    /* same column widths in both project tables so they line up */
+    /* same column widths in all project tables so they line up */
     table.projects {
       table-layout: fixed;
       min-width: 560px;
@@ -167,6 +307,11 @@
       width: 120px;
     }
 
+    table.small {
+      width: auto;
+      min-width: 320px;
+    }
+
     .name,
     .note,
     .download {
@@ -175,45 +320,38 @@
 
     .note,
     .by {
-      color: #5a6b8c;
+      color: var(--muted);
     }
 
     .by {
       font-size: 12px;
     }
 
-    #search {
-      margin: 12px 0;
-      padding: 4px 10px;
-      width: 260px;
-      max-width: 100%;
-      border: 1px solid #90a5ce;
-      border-radius: 12px;
-      font: inherit;
-      font-size: 13px;
-    }
-
-    /* latest updates box */
-    #latest {
+    /* boxes for latest changes and releases */
+    .box {
       max-width: 760px;
       margin: 12px 0;
-      border: 1px solid #a3b4d7;
+      border: 1px solid var(--tab-line);
       border-radius: 4px;
-      background: #f9fafc;
+      background: var(--box);
       font-size: 13px;
     }
 
-    .latest-title {
+    .box-title {
       padding: 4px 10px;
-      background: linear-gradient(#f1f4f9, #dbe3ef);
-      border-bottom: 1px solid #a3b4d7;
+      background: linear-gradient(var(--tab-top), var(--tab-mid));
+      border-bottom: 1px solid var(--tab-line);
       font-weight: bold;
-      color: #354c7b;
+      color: var(--heading);
     }
 
-    .latest-title a {
+    .box-title a {
       float: right;
       font-weight: normal;
+    }
+
+    .box-body {
+      padding: 6px 10px;
     }
 
     #latest-list {
@@ -229,21 +367,43 @@
     #latest-list .when {
       display: inline-block;
       width: 130px;
-      color: #5a6b8c;
+      color: var(--muted);
       font-variant-numeric: tabular-nums;
     }
 
     #latest-list .where {
-      color: #5a6b8c;
+      color: var(--muted);
       font-size: 12px;
+    }
+
+    .port img {
+      display: block;
+      max-width: 100%;
+      max-height: 220px;
+      margin: 8px 0;
+    }
+
+    #search {
+      margin: 12px 0;
+      padding: 4px 10px;
+      width: 260px;
+      max-width: 100%;
+      border: 1px solid var(--input-line);
+      border-radius: 12px;
+      background: var(--input);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
     }
 
     #section,
     #sort {
       margin: 0 0 0 4px;
       padding: 3px 6px;
-      border: 1px solid #90a5ce;
+      border: 1px solid var(--input-line);
       border-radius: 3px;
+      background: var(--input);
+      color: var(--text);
       font: inherit;
       font-size: 13px;
     }
@@ -252,21 +412,21 @@
     label[for="sort"] {
       margin-left: 8px;
       font-size: 13px;
-      color: #354c7b;
+      color: var(--heading);
     }
 
     #count {
       margin-left: 8px;
-      color: #5a6b8c;
+      color: var(--muted);
       font-size: 13px;
     }
 
     .footer {
       padding: 6px 16px;
-      border-top: 1px solid #c4cfe5;
+      border-top: 1px solid var(--line);
       text-align: right;
       font-size: 11px;
-      color: #2a3d61;
+      color: var(--footer-text);
     }
   </style>
 </head>
@@ -275,6 +435,7 @@
 <div id="titlearea">
   <img src="logo.jpg" alt="">
   <div id="projectname">DrDecki</div>
+  <button id="theme" type="button">Dark mode</button>
 </div>
 
 <div class="tabs">
@@ -291,7 +452,7 @@
 
 <div class="header" id="header">Hi, I'm DrDecki</div>
 
-<div class="contents" id="main">
+<div class="contents" id="page-main">
   <h2>About</h2>
   <p>Hobby developer, mostly making homebrew and ports for the PS Vita and building my own small games.</p>
   <p>If you like what I do, consider donating on <a href="https://ko-fi.com/drdecki">Ko-fi</a>.</p>
@@ -299,11 +460,19 @@
   <h2>Ports</h2>
   <div class="table-wrap">
     <table class="projects">
-      <tr><td class="name"><a href="https://github.com/DrDecki/vkquake2-vita">vkQuake2</a></td><td>Quake II on the Vita, 60 FPS</td><td class="note">v1.1</td></tr>
-      <tr><td class="name"><a href="https://github.com/DrDecki/supertux-vita">SuperTux</a></td><td>SuperTux 0.7 on the Vita</td><td class="note">v1.0</td></tr>
-      <tr><td class="name"><a href="https://github.com/DrDecki/Aleph-One-PsVita">Aleph One</a></td><td>Marathon on the Vita</td><td class="note">v2.1.1</td></tr>
+      <tr><td class="name"><a href="#vkquake2">vkQuake2</a></td><td>Quake II on the Vita, 60 FPS</td><td class="note" data-release="vkquake2-vita">v1.1</td></tr>
+      <tr><td class="name"><a href="#supertux">SuperTux</a></td><td>SuperTux 0.7 on the Vita</td><td class="note" data-release="supertux-vita">v1.0</td></tr>
+      <tr><td class="name"><a href="#aleph-one">Aleph One</a></td><td>Marathon on the Vita</td><td class="note" data-release="Aleph-One-PsVita">v2.1.1</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/taisei-vita">Taisei</a></td><td>Touhou fangame</td><td class="note">working on it</td></tr>
       <tr><td class="name"><a href="https://github.com/DrDecki/corsixth-vita">CorsixTH</a></td><td>Theme Hospital</td><td class="note">working on it</td></tr>
+    </table>
+  </div>
+
+  <h2>My Games</h2>
+  <div class="table-wrap">
+    <table class="projects">
+      <tr><td class="name"><a href="https://drdecki.itch.io/deckis-platformer">Deckis Platformer</a></td><td>A platformer that builds itself. Every run is a new randomly generated level.</td><td class="note">PS Vita</td></tr>
+      <tr><td class="name"><a href="https://drdecki.itch.io/snake">Snake</a></td><td>Snake, but it fights back.</td><td class="note">Browser</td></tr>
     </table>
   </div>
 
@@ -316,14 +485,121 @@
       <tr><td class="name"><a href="https://github.com/DrDecki/mgs3-crouch-walk-mod-vita">MGS3 Crouch Walk</a></td><td>Crouch walk mod for the HD Collection</td><td class="note"></td></tr>
     </table>
   </div>
-
 </div>
 
-<div class="contents" id="vhdb" hidden>
+<div class="contents port" id="page-vkquake2" hidden>
+  <img src="https://raw.githubusercontent.com/DrDecki/vkquake2-vita/master/vkQuake2.png" alt="vkQuake2">
+  <p>Quake II on the PS Vita with the Vulkan renderer from <a href="https://github.com/kondrak/vkQuake2">vkQuake2</a>. The Vita has no Vulkan driver, so it runs on <a href="https://github.com/DrDecki/vkvita">VkVita</a>, which translates the Vulkan calls and shaders to the Vita's own graphics API.</p>
+
+  <div class="box" data-release-box="vkquake2-vita">
+    <div class="box-title">Latest release <a href="https://github.com/DrDecki/vkquake2-vita/releases">all releases</a></div>
+    <div class="box-body">Loading...</div>
+  </div>
+
+  <h2>What works</h2>
+  <ul>
+    <li>The whole single player campaign</li>
+    <li>The Reckoning, Ground Zero, Zaero and Capture the Flag</li>
+    <li>Deathmatch over Wi-Fi against other Vitas or PCs</li>
+    <li>Sound effects and the ogg soundtrack</li>
+    <li>4x MSAA and 60 FPS almost everywhere</li>
+  </ul>
+
+  <h2>Installation</h2>
+  <p>You need a Vita with HENkaku or Enso, VitaShell and your own copy of Quake II (Steam, GOG or CD, version 3.20).</p>
+  <ol>
+    <li>Install <code>vkquake2.vpk</code> with VitaShell.</li>
+    <li>Create the folder <code>ux0:data/vkquake2/baseq2</code>.</li>
+    <li>Copy <code>pak0.pak</code>, <code>pak1.pak</code>, <code>pak2.pak</code> and the <code>players</code> folder from your Quake II <code>baseq2</code> folder into it.</li>
+    <li>For music, copy <code>track02.ogg</code> to <code>track21.ogg</code> from the GOG or Steam release into <code>baseq2/music</code>.</li>
+    <li>Start the game.</li>
+  </ol>
+  <p>The mission packs go next to <code>baseq2</code> into <code>xatrix</code>, <code>rogue</code>, <code>zaero</code> and <code>ctf</code>. Pick them under Game, change game.</p>
+
+  <h2>Controls</h2>
+  <div class="table-wrap">
+    <table class="small">
+      <tr><td>Left stick</td><td>Move</td></tr>
+      <tr><td>Right stick</td><td>Look</td></tr>
+      <tr><td>R</td><td>Fire</td></tr>
+      <tr><td>L or Cross</td><td>Jump</td></tr>
+      <tr><td>Circle</td><td>Crouch</td></tr>
+      <tr><td>Square / Triangle</td><td>Previous / next weapon</td></tr>
+      <tr><td>D-pad</td><td>Inventory</td></tr>
+      <tr><td>Select</td><td>Help computer</td></tr>
+      <tr><td>Start</td><td>Menu</td></tr>
+    </table>
+  </div>
+
+  <p>Multiplayer, settings and building it yourself are explained in the <a href="https://github.com/DrDecki/vkquake2-vita">README on GitHub</a>.</p>
+</div>
+
+<div class="contents port" id="page-supertux" hidden>
+  <img src="https://www.supertux.org/images/0_7_0/github_preview.png" alt="SuperTux">
+  <p>A port of <a href="https://github.com/SuperTux/supertux">SuperTux</a> 0.7.0, the jump'n'run with Tux. Run and jump through multiple worlds, stomp on enemies, grab power-ups and find secrets on the way.</p>
+
+  <div class="box" data-release-box="supertux-vita">
+    <div class="box-title">Latest release <a href="https://github.com/DrDecki/supertux-vita/releases">all releases</a></div>
+    <div class="box-body">Loading...</div>
+  </div>
+
+  <h2>Installation</h2>
+  <ol>
+    <li>Download <code>supertux2.vpk</code> and <code>supertux2.zip</code>.</li>
+    <li>Install <code>supertux2.vpk</code> with VitaShell.</li>
+    <li>Extract <code>supertux2.zip</code> to <code>ux0:/data/</code>, so you end up with <code>ux0:/data/supertux2/data.zip</code>. Don't extract <code>data.zip</code> itself.</li>
+    <li>Start the game from the LiveArea.</li>
+  </ol>
+  <p>Saves and settings go to <code>ux0:/data/supertux2/user</code>. The game uses your Vita's system language, you can pick another one in the options.</p>
+
+  <p>All credit for the game goes to the <a href="https://github.com/SuperTux/supertux">SuperTux team</a>. Build instructions are in the <a href="https://github.com/DrDecki/supertux-vita">README on GitHub</a>.</p>
+</div>
+
+<div class="contents port" id="page-aleph-one" hidden>
+  <p>A native port of Aleph One, the open source engine behind Bungie's Marathon, Marathon 2: Durandal and Marathon Infinity. It also runs fan made scenarios like Eternal, Rubicon X or Marathon Phoenix.</p>
+
+  <div class="box" data-release-box="Aleph-One-PsVita">
+    <div class="box-title">Latest release <a href="https://github.com/DrDecki/Aleph-One-PsVita/releases">all releases</a></div>
+    <div class="box-body">Loading...</div>
+  </div>
+
+  <h2>Installation</h2>
+  <p>You need a PS Vita or PS TV with HENkaku or Enso and VitaShell.</p>
+  <ol>
+    <li>Install <code>alephone.vpk</code> with VitaShell.</li>
+    <li>Download the games you want from the <a href="https://alephone.lhowon.org/scenarios.html">Aleph One scenarios page</a>. All three Marathon games are free.</li>
+    <li>Unzip them and copy every game into its own folder inside <code>ux0:data/AlephOne/</code>.</li>
+    <li>Copy the contents of <code>AlephOne.zip</code> into <code>ux0:data/</code>.</li>
+    <li>Start Aleph One from the LiveArea and choose a game.</li>
+  </ol>
+  <p>It should look like this in the end:</p>
+  <pre>ux0:data/AlephOne/Lua/
+ux0:data/AlephOne/Plugins/
+ux0:data/AlephOne/Marathon/
+ux0:data/AlephOne/Marathon 2/
+ux0:data/AlephOne/Marathon Infinity/</pre>
+  <p>Each game folder has to contain the game files like Map, Shapes and Sounds directly. Fan scenarios get their own folder next to the others.</p>
+
+  <h2>Cheats</h2>
+  <p>Press Triangle in game, type a command and confirm with Enter. A few of them:</p>
+  <div class="table-wrap">
+    <table class="small">
+      <tr><td><code>nrg()</code></td><td>Recharge shields</td></tr>
+      <tr><td><code>otwo()</code></td><td>Refill oxygen</td></tr>
+      <tr><td><code>kyt()</code></td><td>Toggle invincibility</td></tr>
+      <tr><td><code>ammo()</code></td><td>+10 ammo for all weapons</td></tr>
+      <tr><td><code>yourmom()</code></td><td>Save the game anywhere</td></tr>
+    </table>
+  </div>
+
+  <p>The full cheat list is in the <a href="https://github.com/DrDecki/Aleph-One-PsVita">README on GitHub</a>.</p>
+</div>
+
+<div class="contents" id="page-vhdb" hidden>
   <p>Everything in my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>, loaded straight from its <a href="https://github.com/DrDecki/VitaHomebrewDB/blob/main/CATALOG.md">CATALOG.md</a>.</p>
 
-  <div id="latest" hidden>
-    <div class="latest-title">Latest changes <a href="#vhdb" id="latest-all">see all</a></div>
+  <div class="box" id="latest" hidden>
+    <div class="box-title">Latest changes <a href="#vhdb" id="latest-all">see all</a></div>
     <ul id="latest-list"></ul>
   </div>
 
@@ -346,7 +622,7 @@
   <p id="total" class="note"></p>
 </div>
 
-<div class="contents" id="repos" hidden>
+<div class="contents" id="page-repos" hidden>
   <p>All my public repositories on <a href="https://github.com/DrDecki">GitHub</a>, last updated first.</p>
   <span id="repo-count">Loading...</span>
   <div id="repo-list"></div>
@@ -355,23 +631,112 @@
 <div class="footer">Last updated November 2026</div>
 
 <script>
-  // tabs
+  // dark mode, follows the system unless you pick one yourself
+  function isDark() {
+    const theme = document.documentElement.dataset.theme;
+    if (theme) return theme === 'dark';
+    return matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function updateThemeButton() {
+    document.getElementById('theme').textContent = isDark() ? 'Light mode' : 'Dark mode';
+  }
+
+  document.getElementById('theme').addEventListener('click', () => {
+    const theme = isDark() ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('theme', theme); } catch (error) {}
+    updateThemeButton();
+  });
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeButton);
+  updateThemeButton();
+
+  // tabs and port pages
+  const pages = { main: "Hi, I'm DrDecki", vhdb: 'VitaHomebrewDB', repos: 'Repositories' };
+  const ports = { vkquake2: 'vkQuake2', supertux: 'SuperTux', 'aleph-one': 'Aleph One' };
+
   function showPage(name) {
-    const titles = { main: "Hi, I'm DrDecki", vhdb: 'VitaHomebrewDB', repos: 'Repositories' };
-    if (!titles[name]) name = 'main';
+    if (!pages[name] && !ports[name]) name = 'main';
 
-    for (const page in titles) {
-      document.getElementById(page).hidden = page !== name;
+    // the page ids start with page- so the browser doesn't jump down to them
+    for (const page of [...Object.keys(pages), ...Object.keys(ports)]) {
+      document.getElementById('page-' + page).hidden = page !== name;
     }
-    document.getElementById('header').textContent = titles[name];
 
-    for (const tab of document.querySelectorAll('.tabs a')) {
-      tab.classList.toggle('current', tab.getAttribute('href') === '#' + name);
+    // port pages belong to the main page, so that tab stays active
+    const header = document.getElementById('header');
+    if (ports[name]) {
+      header.innerHTML = `<a href="#main" class="path">Main Page</a> <span class="path">&rsaquo;</span> ${ports[name]}`;
+    } else {
+      header.textContent = pages[name];
+    }
+
+    const tab = ports[name] ? 'main' : name;
+    for (const link of document.querySelectorAll('.tabs a')) {
+      link.classList.toggle('current', link.getAttribute('href') === '#' + tab);
     }
   }
 
-  window.addEventListener('hashchange', () => showPage(location.hash.slice(1)));
+  window.addEventListener('hashchange', () => {
+    showPage(location.hash.slice(1));
+    window.scrollTo(0, 0);
+  });
   showPage(location.hash.slice(1));
+
+  // latest GitHub release of a port, kept for 10 minutes like the repo list
+  async function getRelease(name) {
+    const key = 'release-' + name;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(key)); } catch (error) {}
+
+    if (saved && Date.now() - saved.time < 10 * 60 * 1000) return saved.release;
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/DrDecki/${name}/releases/latest`);
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error(response.status);
+
+      const data = await response.json();
+      const release = {
+        tag: data.tag_name,
+        date: (data.published_at || '').slice(0, 10),
+        url: data.html_url,
+        files: data.assets.map(asset => ({ name: asset.name, url: asset.browser_download_url }))
+      };
+      try { localStorage.setItem(key, JSON.stringify({ time: Date.now(), release })); } catch (error) {}
+      return release;
+    } catch (error) {
+      return saved ? saved.release : null;
+    }
+  }
+
+  async function loadReleases() {
+    const names = new Set([...document.querySelectorAll('[data-release], [data-release-box]')]
+      .map(element => element.dataset.release || element.dataset.releaseBox));
+
+    for (const name of names) {
+      const release = await getRelease(name);
+
+      // the version on the main page, the number in the html stays if GitHub doesn't answer
+      for (const cell of document.querySelectorAll(`[data-release="${name}"]`)) {
+        if (release) cell.innerHTML = `<a href="${escape(release.url)}">${escape(release.tag)}</a>`;
+      }
+
+      for (const box of document.querySelectorAll(`[data-release-box="${name}"] .box-body`)) {
+        if (!release) {
+          box.innerHTML = `Couldn't load the release right now, get it from <a href="https://github.com/DrDecki/${name}/releases">GitHub</a>.`;
+          continue;
+        }
+        const files = release.files.map(file => `<a href="${escape(file.url)}">${escape(file.name)}</a>`).join(' &middot; ');
+        box.innerHTML = `<b>${escape(release.tag)}</b> from ${escape(release.date)}<br>
+          ${files ? 'Download: ' + files + '<br>' : ''}
+          <a href="${escape(release.url)}">Release notes</a>`;
+      }
+    }
+  }
+
+  loadReleases();
 
   // repositories
   function repoTable(repos) {
@@ -582,7 +947,7 @@
 
         // the update date goes in its own column right after the version
         const cells = [...row.cells.slice(0, 3), row.date, ...row.cells.slice(3)];
-        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
+        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
       }
       if (!rows) continue;
 

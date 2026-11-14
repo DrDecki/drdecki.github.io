@@ -488,7 +488,9 @@
     for (const match of text.matchAll(/\[([^\]]*)\]\(([^)]*)\)/g)) {
       let url = match[2];
       if (!url.includes('://')) url = repo + url;
-      html += escape(text.slice(last, match.index)) + `<a href="${escape(url)}">${escape(match[1])}</a>`;
+      // two links with only a space between them get a dot in between
+      const between = text.slice(last, match.index);
+      html += (last && !between.trim() ? ' &middot; ' : escape(between)) + `<a href="${escape(url)}">${escape(match[1])}</a>`;
       last = match.index + match[0].length;
     }
     return html + escape(text.slice(last));

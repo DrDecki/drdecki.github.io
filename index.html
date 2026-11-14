@@ -193,6 +193,51 @@
       font-size: 13px;
     }
 
+    /* latest updates box */
+    #latest {
+      max-width: 760px;
+      margin: 12px 0;
+      border: 1px solid #a3b4d7;
+      border-radius: 4px;
+      background: #f9fafc;
+      font-size: 13px;
+    }
+
+    .latest-title {
+      padding: 4px 10px;
+      background: linear-gradient(#f1f4f9, #dbe3ef);
+      border-bottom: 1px solid #a3b4d7;
+      font-weight: bold;
+      color: #354c7b;
+    }
+
+    .latest-title a {
+      float: right;
+      font-weight: normal;
+    }
+
+    #latest-list {
+      margin: 0;
+      padding: 4px 10px;
+      list-style: none;
+    }
+
+    #latest-list li {
+      padding: 2px 0;
+    }
+
+    #latest-list .when {
+      display: inline-block;
+      width: 130px;
+      color: #5a6b8c;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #latest-list .where {
+      color: #5a6b8c;
+      font-size: 12px;
+    }
+
     #section,
     #sort {
       margin: 0 0 0 4px;
@@ -277,6 +322,11 @@
 <div class="contents" id="vhdb" hidden>
   <p>Everything in my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>, loaded straight from its <a href="https://github.com/DrDecki/VitaHomebrewDB/blob/main/CATALOG.md">CATALOG.md</a>.</p>
 
+  <div id="latest" hidden>
+    <div class="latest-title">Latest changes <a href="#vhdb" id="latest-all">see all</a></div>
+    <ul id="latest-list"></ul>
+  </div>
+
   <input id="search" type="search" placeholder="Search name or author">
   <label for="section">Show</label>
   <select id="section">
@@ -285,6 +335,7 @@
   <label for="sort">Sort by</label>
   <select id="sort">
     <option value="name">Name</option>
+    <option value="added">Recently added</option>
     <option value="date">Recently updated</option>
     <option value="size">Size</option>
     <option value="author">Author</option>
@@ -462,6 +513,7 @@
   }
 
   // CATALOG.md has no dates, so take them from the json files
+  // (date = release or last update of the homebrew, added/updated = when that happened in the catalog)
   async function readDetails() {
     const files = ['apps.json', 'psp_apps.json', 'preserved/plugins.json', 'preserved/tools.json'];
     const details = {};
@@ -470,7 +522,7 @@
       try {
         const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file, { cache: 'no-cache' });
         for (const app of await response.json()) {
-          details[app.url] = app.date || '';
+          details[app.url] = { date: app.date || '', added: app.added || '', updated: app.updated || '', id: parseInt(app.id) || 0 };
         }
       } catch (error) {}
     }));
@@ -478,7 +530,11 @@
     for (const section of sections) {
       for (const row of section.rows) {
         const download = row.cells.join(' ').match(/\[download\]\(([^)]*)\)/);
-        row.date = (download && details[download[1]]) || '';
+        const info = (download && details[download[1]]) || { date: '', added: '', updated: '', id: 0 };
+        row.date = info.date;
+        row.added = info.added;
+        row.updated = info.updated;
+        row.id = info.id;
         row.size = megabytes(row.cells[3]);
       }
     }
@@ -497,6 +553,7 @@
     const name = (a, b) => a.cells[0].localeCompare(b.cells[0]);
 
     return [...rows].sort((a, b) => {
+      if (by === 'added') return b.added.localeCompare(a.added) || b.id - a.id;
       if (by === 'date') return b.date.localeCompare(a.date) || name(a, b);
       if (by === 'size') return b.size - a.size || name(a, b);
       if (by === 'author') return a.cells[1].localeCompare(b.cells[1]) || name(a, b);
@@ -541,6 +598,69 @@
     document.getElementById('count').textContent = `${shown} of ${all} entries`;
   }
 
+  // "2026-11-14T23:48:50Z" -> "2026-11-15 00:48" in the visitor's time zone
+  function localTime(iso) {
+    const d = new Date(iso);
+    const two = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;
+  }
+
+  // the newest additions and updates across all sections, big imports shown as one line
+  function showLatest() {
+    const all = [];
+    for (const section of sections) {
+      const title = section.title.replace(/\s*\(\d+\)$/, '');
+      for (const row of section.rows) {
+        if (row.added) all.push({ row, section: title, kind: 'added', time: row.added });
+        if (row.updated && row.updated !== row.added) all.push({ row, section: title, kind: 'updated', time: row.updated });
+      }
+    }
+    all.sort((a, b) => b.time.localeCompare(a.time) || b.row.id - a.row.id);
+
+    // changes made at the same moment in the same section belong together
+    const groups = [];
+    for (const item of all) {
+      const last = groups[groups.length - 1];
+      if (last && last.time === item.time && last.section === item.section && last.kind === item.kind) last.items.push(item);
+      else groups.push({ time: item.time, section: item.section, kind: item.kind, items: [item] });
+    }
+
+    let html = '';
+    let lines = 0;
+    for (const group of groups) {
+      if (lines >= 8) break;
+      const when = `<span class="when">${escape(localTime(group.time))}</span>`;
+
+      if (group.items.length > 3) {
+        html += `<li>${when} <b>${group.items.length} ${escape(group.section)}</b> ${group.kind} at once</li>`;
+        lines++;
+        continue;
+      }
+
+      for (const { row, section, kind } of group.items) {
+        if (lines >= 8) break;
+        const [name, author, version] = row.cells;
+        const what = kind === 'updated' ? `updated to ${escape(version)}` : `${escape(version)} added`;
+        html += `<li>${when} <b>${escape(name)}</b> ${what} by ${escape(author)} <span class="where">(${escape(section)})</span></li>`;
+        lines++;
+      }
+    }
+
+    if (!html) return;
+    document.getElementById('latest-list').innerHTML = html;
+    document.getElementById('latest').hidden = false;
+  }
+
+
+
+  document.getElementById('latest-all').addEventListener('click', event => {
+    event.preventDefault();
+    document.getElementById('section').value = '';
+    document.getElementById('sort').value = 'added';
+    showCatalog();
+    document.getElementById('catalog').scrollIntoView();
+  });
+
   async function loadCatalog() {
     try {
       const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/CATALOG.md', { cache: 'no-cache' });
@@ -555,6 +675,7 @@
         document.getElementById('section').append(option);
       }
 
+      showLatest();
       document.getElementById('total').textContent = total;
       showCatalog();
     } catch (error) {

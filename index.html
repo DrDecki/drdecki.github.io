@@ -462,7 +462,7 @@
 
     await Promise.all(files.map(async file => {
       try {
-        const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file);
+        const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file, { cache: 'no-cache' });
         for (const app of await response.json()) {
           details[app.url] = app.date || '';
         }
@@ -533,7 +533,7 @@
 
   async function loadCatalog() {
     try {
-      const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/CATALOG.md');
+      const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/CATALOG.md', { cache: 'no-cache' });
       readCatalog(await response.text());
       await readDetails();
       document.getElementById('total').textContent = total;

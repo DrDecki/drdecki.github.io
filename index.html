@@ -599,7 +599,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   <p>Everything in my homebrew catalog <a href="https://github.com/DrDecki/VitaHomebrewDB">VitaHomebrewDB</a>, loaded straight from its <a href="https://github.com/DrDecki/VitaHomebrewDB/blob/main/CATALOG.md">CATALOG.md</a>.</p>
 
   <div class="box" id="latest" hidden>
-    <div class="box-title">Latest changes <a href="#vhdb" id="latest-all">see all</a></div>
+    <div class="box-title">Latest changes</div>
     <ul id="latest-list"></ul>
   </div>
 
@@ -999,7 +999,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       const when = `<span class="when">${escape(localTime(group.time))}</span>`;
 
       if (group.items.length > 3) {
-        html += `<li>${when} <b>${group.items.length} ${escape(group.section)}</b> ${group.kind} at once</li>`;
+        html += `<li>${when} ${group.kind} <b>${group.items.length} ${escape(group.section)}</b> at once</li>`;
         lines++;
         continue;
       }
@@ -1007,8 +1007,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       for (const { row, section, kind } of group.items) {
         if (lines >= 8) break;
         const [name, author, version] = row.cells;
-        const what = kind === 'updated' ? `updated to ${escape(version)}` : `${escape(version)} added`;
-        html += `<li>${when} <b>${escape(name)}</b> ${what} by ${escape(author)} <span class="where">(${escape(section)})</span></li>`;
+        html += `<li>${when} ${kind} <b>${escape(name)}</b> ${escape(version)} by ${escape(author)} <span class="where">(${escape(section)})</span></li>`;
         lines++;
       }
     }
@@ -1020,13 +1019,6 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
 
 
 
-  document.getElementById('latest-all').addEventListener('click', event => {
-    event.preventDefault();
-    document.getElementById('section').value = '';
-    document.getElementById('sort').value = 'added';
-    showCatalog();
-    document.getElementById('catalog').scrollIntoView();
-  });
 
   async function loadCatalog() {
     try {

@@ -610,9 +610,8 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   </select>
   <label for="sort">Sort by</label>
   <select id="sort">
-    <option value="name">Name</option>
-    <option value="added">Recently added</option>
     <option value="date">Recently updated</option>
+    <option value="name">Name</option>
     <option value="size">Size</option>
     <option value="author">Author</option>
   </select>
@@ -902,6 +901,8 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
         row.added = info.added;
         row.updated = info.updated;
         row.id = info.id;
+        // adding something is also an update for the catalog, so take whichever happened last
+        row.changed = info.updated > info.added ? info.updated : info.added;
         row.size = megabytes(row.cells[3]);
       }
     }
@@ -920,8 +921,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
     const name = (a, b) => a.cells[0].localeCompare(b.cells[0]);
 
     return [...rows].sort((a, b) => {
-      if (by === 'added') return b.added.localeCompare(a.added) || b.id - a.id;
-      if (by === 'date') return b.date.localeCompare(a.date) || name(a, b);
+      if (by === 'date') return b.changed.localeCompare(a.changed) || b.id - a.id;
       if (by === 'size') return b.size - a.size || name(a, b);
       if (by === 'author') return a.cells[1].localeCompare(b.cells[1]) || name(a, b);
       return name(a, b);
@@ -946,7 +946,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
         shown++;
 
         // the update date goes in its own column right after the version
-        const cells = [...row.cells.slice(0, 3), row.date, ...row.cells.slice(3)];
+        const cells = [...row.cells.slice(0, 3), row.changed ? localTime(row.changed).slice(0, 10) : row.date, ...row.cells.slice(3)];
         rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
       }
       if (!rows) continue;

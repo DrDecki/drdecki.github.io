@@ -383,6 +383,25 @@
       margin: 8px 0;
     }
 
+    .icon {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      vertical-align: middle;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+
+    /* PSP icons are 144x80, so they get a wider spot */
+    .icon.wide {
+      width: 50px;
+    }
+
+    #catalog td {
+      vertical-align: middle;
+    }
+
     #search {
       margin: 12px 0;
       padding: 4px 10px;
@@ -888,7 +907,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       try {
         const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file, { cache: 'no-cache' });
         for (const app of await response.json()) {
-          details[app.url] = { date: app.date || '', added: app.added || '', updated: app.updated || '', id: parseInt(app.id) || 0 };
+          details[app.url] = { date: app.date || '', added: app.added || '', updated: app.updated || '', id: parseInt(app.id) || 0, icon: app.icon || '' };
         }
       } catch (error) {}
     }));
@@ -896,11 +915,12 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
     for (const section of sections) {
       for (const row of section.rows) {
         const download = row.cells.join(' ').match(/\[download\]\(([^)]*)\)/);
-        const info = (download && details[download[1]]) || { date: '', added: '', updated: '', id: 0 };
+        const info = (download && details[download[1]]) || { date: '', added: '', updated: '', id: 0, icon: '' };
         row.date = info.date;
         row.added = info.added;
         row.updated = info.updated;
         row.id = info.id;
+        row.icon = info.icon;
         // adding something is also an update for the catalog, so take whichever happened last
         row.changed = info.updated > info.added ? info.updated : info.added;
         row.size = megabytes(row.cells[3]);
@@ -939,6 +959,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
     for (const section of sections) {
       if (only && section.title !== only) continue;
 
+      const wide = section.title.startsWith('PSP') ? ' wide' : '';
       let rows = '';
       for (const row of sortRows(section.rows)) {
         all++;
@@ -947,7 +968,11 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
 
         // the update date goes in its own column right after the version
         const cells = [...row.cells.slice(0, 3), row.changed ? localTime(row.changed).slice(0, 10) : row.date, ...row.cells.slice(3)];
-        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${markdown(cell)}</td>`).join('') + '</tr>';
+        // the icon goes in front of the name, an empty spot keeps the names lined up
+        const icon = row.icon
+          ? `<img class="icon${wide}" src="https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/icons/${escape(row.icon)}" alt="" loading="lazy">`
+          : `<span class="icon${wide}"></span>`;
+        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${i === 0 ? icon : ''}${markdown(cell)}</td>`).join('') + '</tr>';
       }
       if (!rows) continue;
 

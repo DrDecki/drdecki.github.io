@@ -264,6 +264,12 @@
       font-size: 12px;
     }
 
+    pre code {
+      padding: 0;
+      background: none;
+      border: 0;
+    }
+
     .table-wrap {
       overflow-x: auto;
     }
@@ -385,8 +391,8 @@
 
     .icon {
       display: inline-block;
-      width: 28px;
-      height: 28px;
+      width: 40px;
+      height: 40px;
       margin-right: 8px;
       vertical-align: middle;
       border-radius: 4px;
@@ -395,7 +401,71 @@
 
     /* PSP icons are 144x80, so they get a wider spot */
     .icon.wide {
-      width: 50px;
+      width: 72px;
+    }
+
+    /* homebrew pages */
+    .app-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 8px 0 4px;
+    }
+
+    .app-head img {
+      height: 64px;
+      border-radius: 6px;
+    }
+
+    .app-head .title {
+      font: bold 150% Tahoma, Arial, sans-serif;
+    }
+
+    .fields td:first-child {
+      width: 110px;
+      color: var(--heading);
+      font-weight: bold;
+    }
+
+    .text {
+      max-width: 70ch;
+      white-space: pre-wrap;
+    }
+
+    .shots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .shots img {
+      height: 136px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+    }
+
+    video {
+      max-width: 100%;
+      width: 480px;
+    }
+
+    .readme {
+      max-width: 80ch;
+      overflow-wrap: anywhere;
+    }
+
+    .readme img {
+      max-width: 100%;
+    }
+
+    .readme h1,
+    .readme h2,
+    .readme h3 {
+      margin: 18px 0 6px;
+      border: 0;
+      font-size: 120%;
+      font-weight: bold;
+      color: var(--heading);
     }
 
     #catalog td {
@@ -646,7 +716,13 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   <div id="repo-list"></div>
 </div>
 
+<div class="contents" id="page-app" hidden></div>
+
 <div class="footer">Last updated November 2026</div>
+
+<!-- for showing the READMEs of homebrews on their pages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 
 <script>
   // dark mode, follows the system unless you pick one yourself
@@ -675,22 +751,28 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   const ports = { vkquake2: 'vkQuake2', supertux: 'SuperTux', 'aleph-one': 'Aleph One' };
 
   function showPage(name) {
-    if (!pages[name] && !ports[name]) name = 'main';
+    // homebrew pages look like #app-1234, the number is the id in the catalog
+    const app = name.startsWith('app-') ? name.slice(4) : null;
+    if (!app && !pages[name] && !ports[name]) name = 'main';
 
     // the page ids start with page- so the browser doesn't jump down to them
     for (const page of [...Object.keys(pages), ...Object.keys(ports)]) {
       document.getElementById('page-' + page).hidden = page !== name;
     }
+    document.getElementById('page-app').hidden = !app;
 
-    // port pages belong to the main page, so that tab stays active
+    // port pages belong to the main page and homebrew pages to the catalog, so those tabs stay active
     const header = document.getElementById('header');
     if (ports[name]) {
       header.innerHTML = `<a href="#main" class="path">Main Page</a> <span class="path">&rsaquo;</span> ${ports[name]}`;
+    } else if (app) {
+      header.innerHTML = '<a href="#vhdb" class="path">VitaHomebrewDB</a>';
+      showApp(app);
     } else {
       header.textContent = pages[name];
     }
 
-    const tab = ports[name] ? 'main' : name;
+    const tab = ports[name] ? 'main' : app ? 'vhdb' : name;
     for (const link of document.querySelectorAll('.tabs a')) {
       link.classList.toggle('current', link.getAttribute('href') === '#' + tab);
     }
@@ -700,7 +782,6 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
     showPage(location.hash.slice(1));
     window.scrollTo(0, 0);
   });
-  showPage(location.hash.slice(1));
 
   // latest GitHub release of a port, kept for 10 minutes like the repo list
   async function getRelease(name) {
@@ -856,6 +937,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   // catalog
   const repo = 'https://github.com/DrDecki/VitaHomebrewDB/blob/main/';
   let sections = [];
+  const apps = {};
   let total = '';
 
   function escape(text) {
@@ -907,7 +989,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       try {
         const response = await fetch('https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/' + file, { cache: 'no-cache' });
         for (const app of await response.json()) {
-          details[app.url] = { date: app.date || '', added: app.added || '', updated: app.updated || '', id: parseInt(app.id) || 0, icon: app.icon || '' };
+          details[app.url] = { date: app.date || '', added: app.added || '', updated: app.updated || '', id: parseInt(app.id) || 0, icon: app.icon || '', app };
         }
       } catch (error) {}
     }));
@@ -921,6 +1003,8 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
         row.updated = info.updated;
         row.id = info.id;
         row.icon = info.icon;
+        row.app = info.app;
+        if (info.app) apps[info.app.id] = { row, section: section.title.replace(/\s*\(\d+\)$/, '') };
         // adding something is also an update for the catalog, so take whichever happened last
         row.changed = info.updated > info.added ? info.updated : info.added;
         row.size = megabytes(row.cells[3]);
@@ -972,7 +1056,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
         const icon = row.icon
           ? `<img class="icon${wide}" src="https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/icons/${escape(row.icon)}" alt="" loading="lazy">`
           : `<span class="icon${wide}"></span>`;
-        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${i === 0 ? icon : ''}${markdown(cell)}</td>`).join('') + '</tr>';
+        rows += '<tr>' + cells.map((cell, i) => `<td${i === 0 ? ' class="name"' : i === 3 ? ' class="note"' : i === 4 ? ' class="download"' : ''}>${i === 0 ? icon + appLink(row, cell) : markdown(cell)}</td>`).join('') + '</tr>';
       }
       if (!rows) continue;
 
@@ -1032,7 +1116,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       for (const { row, section, kind } of group.items) {
         if (lines >= 8) break;
         const [name, author, version] = row.cells;
-        html += `<li>${when} ${kind} <b>${escape(name)}</b> ${escape(version)} by ${escape(author)} <span class="where">(${escape(section)})</span></li>`;
+        html += `<li>${when} ${kind} <b>${appLink(row, name)}</b> ${escape(version)} by ${escape(author)} <span class="where">(${escape(section)})</span></li>`;
         lines++;
       }
     }
@@ -1044,6 +1128,114 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
 
 
 
+
+  // the name of a homebrew, linked to its own page
+  function appLink(row, name) {
+    return row.app ? `<a href="#app-${escape(row.app.id)}">${escape(name)}</a>` : escape(name);
+  }
+
+  const categories = { 1: 'Original game', 2: 'Game port', 4: 'Utility', 5: 'Emulator' };
+  const raw = 'https://raw.githubusercontent.com/DrDecki/VitaHomebrewDB/main/';
+
+  // owner/name of a GitHub repo in a link, or null
+  function githubRepo(url) {
+    const match = (url || '').match(/github\.com\/([^/]+\/[^/#?]+)/);
+    return match ? match[1].replace(/\.git$/, '') : null;
+  }
+
+  async function showApp(id) {
+    const page = document.getElementById('page-app');
+    page.innerHTML = '<p>Loading...</p>';
+    await catalogLoaded;
+
+    const entry = apps[id];
+    if (!entry) {
+      page.innerHTML = '<p>This homebrew is not in the catalog (anymore). <a href="#vhdb">Back to the catalog</a></p>';
+      return;
+    }
+
+    const { row, section } = entry;
+    const app = row.app;
+    const [name, author, version, size] = row.cells;
+    document.getElementById('header').innerHTML = `<a href="#vhdb" class="path">VitaHomebrewDB</a> <span class="path">&rsaquo;</span> ${escape(name)}`;
+
+    const icon = app.icon ? `<img src="${raw}icons/${escape(app.icon)}" alt="">` : '';
+    let html = `<div class="app-head">${icon}<div><div class="title">${escape(name)}</div>${escape(version)} by ${escape(author)}</div></div>`;
+
+    html += `<p class="text">${escape(app.long_description || app.description)}</p>`;
+
+    // downloads and links, the links column is taken straight from CATALOG.md
+    const fileName = url => { try { return decodeURIComponent(url.split('/').pop()); } catch (error) { return url.split('/').pop(); } };
+    let files = `<a href="${escape(app.url)}">${escape(fileName(app.url))}</a>`;
+    if (app.data) files += ` &middot; <a href="${escape(app.data)}">${escape(fileName(app.data))}</a>`;
+    const releases = /github\.com\/.+\/releases/.test(app.release_page || '');
+    const links = row.cells[5] && row.cells[5] !== '—' ? markdown(row.cells[5]) : '';
+    html += `<div class="box">
+      <div class="box-title">Download</div>
+      <div class="box-body">${files}${links ? '<br>Links: ' + links : ''}${releases ? `<br><a href="${escape(app.release_page)}">All releases</a>` : ''}</div>
+    </div>`;
+
+    const fields = [
+      ['Section', section],
+      ['Category', categories[app.type]],
+      ['Version', version],
+      ['Size', size],
+      ['Title ID', app.titleid],
+      ['Released', app.date],
+      ['In catalog', app.added && localTime(app.added)],
+      ['Updated', app.updated && app.updated !== app.added && localTime(app.updated)],
+      ['Tags', (app.tags || '').split(',').filter(Boolean).join(', ')]
+    ].filter(field => field[1]);
+    html += `<h2>Details</h2><div class="table-wrap"><table class="small fields">${fields.map(([label, value]) => `<tr><td>${label}</td><td>${escape(value)}</td></tr>`).join('')}</table></div>`;
+
+    if (app.requirements) html += `<h2>Requirements</h2><p class="text">${escape(app.requirements)}</p>`;
+    if (app.changelog) html += `<h2>Changelog</h2><p class="text">${escape(app.changelog)}</p>`;
+
+    const shots = (app.screenshots || '').split(';').filter(Boolean);
+    if (shots.length) {
+      html += `<h2>Screenshots</h2><div class="shots">${shots.map(shot => `<a href="${raw}${escape(shot)}"><img src="${raw}${escape(shot)}" alt="" loading="lazy"></a>`).join('')}</div>`;
+    }
+    if (app.trailer) html += `<h2>Trailer</h2><video src="${escape(app.trailer)}" controls preload="none"></video>`;
+
+    const repo = githubRepo(app.source) || githubRepo(app.url);
+    if (repo) html += `<h2>README</h2><div class="readme" id="readme">Loading the README from <a href="https://github.com/${escape(repo)}">GitHub</a>...</div>`;
+
+    page.innerHTML = html;
+    if (repo) loadReadme(repo, id);
+  }
+
+  // the README of a GitHub repo, with links and images pointing back at the repo
+  async function loadReadme(repo, id) {
+    const box = () => location.hash === '#app-' + id && document.getElementById('readme');
+    const repoLink = `<a href="https://github.com/${escape(repo)}">the repository on GitHub</a>`;
+
+    let text = null;
+    for (const file of ['README.md', 'readme.md', 'Readme.md']) {
+      try {
+        const response = await fetch(`https://raw.githubusercontent.com/${repo}/HEAD/${file}`);
+        if (response.ok) { text = await response.text(); break; }
+      } catch (error) {}
+    }
+
+    if (!box()) return;
+    if (text === null || !window.marked || !window.DOMPurify) {
+      box().innerHTML = `No README to show here, have a look at ${repoLink}.`;
+      return;
+    }
+
+    const div = document.createElement('div');
+    div.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    for (const img of div.querySelectorAll('img')) {
+      const src = img.getAttribute('src') || '';
+      if (!/^(https?:|data:)/.test(src)) img.src = `https://raw.githubusercontent.com/${repo}/HEAD/${src.replace(/^\.?\//, '')}`;
+    }
+    for (const link of div.querySelectorAll('a')) {
+      const href = link.getAttribute('href') || '';
+      if (href && !/^(https?:|mailto:|#)/.test(href)) link.href = `https://github.com/${repo}/blob/HEAD/${href.replace(/^\.?\//, '')}`;
+      if (href.startsWith('#')) link.removeAttribute('href');
+    }
+    box().replaceChildren(...div.childNodes);
+  }
 
   async function loadCatalog() {
     try {
@@ -1070,7 +1262,9 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
   document.getElementById('sort').addEventListener('change', showCatalog);
   document.getElementById('section').addEventListener('change', showCatalog);
   document.getElementById('search').addEventListener('input', showCatalog);
-  loadCatalog();
+  const catalogLoaded = loadCatalog();
+
+  showPage(location.hash.slice(1));
 </script>
 
 </body>

@@ -694,9 +694,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
 
   <input id="search" type="search" placeholder="Search name or author">
   <label for="section">Show</label>
-  <select id="section">
-    <option value="">Everything</option>
-  </select>
+  <select id="section"></select>
   <label for="sort">Sort by</label>
   <select id="sort">
     <option value="date">Recently updated</option>
@@ -1243,7 +1241,8 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
       readCatalog(await response.text());
       await readDetails();
 
-      // one option per section in CATALOG.md, so new sections show up by themselves
+      // one option per section in CATALOG.md, so new sections show up by themselves.
+      // the first one (PSVITA) is picked automatically, so not all 4600 entries get drawn at once
       for (const section of sections) {
         const option = document.createElement('option');
         option.value = section.title;

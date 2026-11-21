@@ -1191,7 +1191,7 @@ ux0:data/AlephOne/Marathon Infinity/</pre>
 
     const shots = (app.screenshots || '').split(';').filter(Boolean);
     if (shots.length) {
-      html += `<h2>Screenshots</h2><div class="shots">${shots.map(shot => `<a href="${raw}${escape(shot)}"><img src="${raw}${escape(shot)}" alt="" loading="lazy"></a>`).join('')}</div>`;
+      html += `<h2>Screenshots</h2><div class="shots">${shots.map(shot => `<a href="${/^https?:/.test(shot) ? '' : raw}${escape(shot)}"><img src="${/^https?:/.test(shot) ? '' : raw}${escape(shot)}" alt="" loading="lazy"></a>`).join('')}</div>`;
     }
     if (app.trailer) html += `<h2>Trailer</h2><video src="${escape(app.trailer)}" controls preload="none"></video>`;
 
